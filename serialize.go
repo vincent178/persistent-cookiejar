@@ -124,11 +124,24 @@ func (j *Jar) mergeFrom(r io.Reader) error {
 // as a JSON array.
 func (j *Jar) writeTo(w io.Writer) error {
 	encoder := json.NewEncoder(w)
-	entries := j.allPersistentEntries()
+	entries := j.allEntries()
 	if err := encoder.Encode(entries); err != nil {
 		return err
 	}
 	return nil
+}
+
+// allEntries returns all the entries in the jar, sorted by primarly by canonical host
+// name and secondarily by path length.
+func (j *Jar) allEntries() []entry {
+	var entries []entry
+	for _, submap := range j.entries {
+		for _, e := range submap {
+				entries = append(entries, e)
+		}
+	}
+	sort.Sort(byCanonicalHost{entries})
+	return entries
 }
 
 // allPersistentEntries returns all the entries in the jar, sorted by primarly by canonical host
